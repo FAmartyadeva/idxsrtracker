@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDX S/R Tracker — IRSX · BULL</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #111418;
+    --surface2: #181c22;
+    --border: #1e2530;
+    --accent: #00e5a0;
+    --red: #ff4560;
+    --green: #00e5a0;
+    --yellow: #ffd166;
+    --text: #e8edf5;
+    --muted: #5a6475;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans); min-height: 100vh; overflow-x: hidden;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+
+  /* HEADER */
+  .header {
+    position: relative; z-index: 10; padding: 28px 40px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(10,12,15,0.9); backdrop-filter: blur(10px);
+  }
+  .logo { display: flex; align-items: baseline; gap: 10px; }
+  .logo-main { font-family: var(--sans); font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-tag {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.25);
+    padding: 2px 8px; border-radius: 3px; letter-spacing: 1px;
+  }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .last-updated { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .refresh-btn {
+    background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3);
+    color: var(--accent); font-family: var(--mono); font-size: 12px;
+    padding: 8px 18px; border-radius: 4px; cursor: pointer;
+    letter-spacing: 0.5px; transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .refresh-btn:hover:not(:disabled) {
+    background: rgba(0,229,160,0.2); border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(0,229,160,0.15);
+  }
+  .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .spin { animation: spin 1s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* MAIN */
+  .main { position: relative; z-index: 1; padding: 32px 40px; display: grid; gap: 24px; }
+
+  /* STATUS */
+  .status-bar {
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    padding: 10px 16px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; display: flex; align-items: center; gap: 10px; min-height: 42px;
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+  .status-dot.active { background: var(--accent); box-shadow: 0 0 6px var(--accent); animation: pulse 1.5s ease-in-out infinite; }
+  .status-dot.error  { background: var(--red); }
+  .status-dot.done   { background: var(--accent); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* SOURCE NOTE */
+  .source-note {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    padding: 8px 16px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+  .source-note span { color: var(--accent); }
+
+  /* GRID */
+  .stocks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  /* CARD */
+  .stock-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; transition: border-color 0.3s;
+  }
+  .stock-card:hover { border-color: rgba(0,229,160,0.25); }
+
+  .card-header {
+    padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .ticker { font-family: var(--sans); font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+  .exchange-badge {
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 3px 7px; border-radius: 3px; margin-top: 4px; letter-spacing: 1px;
+  }
+  .price-block { text-align: right; }
+  .current-price { font-family: var(--mono); font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+  .price-change { font-family: var(--mono); font-size: 12px; margin-top: 2px; }
+  .price-change.up   { color: var(--green); }
+  .price-change.down { color: var(--red); }
+
+  .card-body { padding: 20px 24px; display: grid; gap: 16px; }
+
+  /* TRADINGVIEW CHART */
+  .tv-chart-wrap {
+    border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border);
+    background: #131722; /* TradingView dark bg */
+    position: relative;
+  }
+  .tv-chart-wrap iframe {
+    display: block; width: 100%; border: none;
+    height: 300px;
+  }
+  .tv-chart-label {
+    position: absolute; top: 8px; right: 10px;
+    font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,0.25);
+    letter-spacing: 1px; pointer-events: none; z-index: 2;
+  }
+
+  /* S/R POSITION BAR */
+  .sr-visual {
+    position: relative; height: 56px; background: var(--surface2);
+    border-radius: 6px; border: 1px solid var(--border); overflow: hidden;
+  }
+  .sr-fill {
+    position: absolute; top: 0; left: 0; height: 100%;
+    background: linear-gradient(90deg, rgba(255,69,96,0.15) 0%, rgba(0,229,160,0.15) 100%);
+    transition: width 0.8s cubic-bezier(.4,0,.2,1);
+  }
+  .sr-current-line {
+    position: absolute; top: 0; width: 2px; height: 100%;
+    background: var(--yellow); box-shadow: 0 0 8px var(--yellow);
+    transition: left 0.8s cubic-bezier(.4,0,.2,1);
+  }
+  .sr-labels {
+    position: absolute; inset: 0; display: flex;
+    justify-content: space-between; align-items: center;
+    padding: 0 10px; pointer-events: none;
+  }
+  .sr-label { font-family: var(--mono); font-size: 10px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .sr-label .sr-val { font-size: 11px; font-weight: 700; }
+  .sr-label .sr-tag { font-size: 9px; letter-spacing: 1px; opacity: 0.7; }
+  .sr-label.support    { color: var(--red); }
+  .sr-label.resistance { color: var(--green); }
+
+  /* LEVEL TABLE */
+  .levels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .level-group {
+    background: var(--surface2); border-radius: 8px;
+    border: 1px solid var(--border); padding: 12px 14px;
+  }
+  .level-group-title {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .level-group-title .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .resistance-group .level-group-title { color: var(--green); }
+  .resistance-group .dot { background: var(--green); }
+  .support-group .level-group-title { color: var(--red); }
+  .support-group .dot { background: var(--red); }
+  .level-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .level-row:last-child { border-bottom: none; }
+  .level-label { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .level-value { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+  .resistance-group .level-value { color: var(--green); }
+  .support-group .level-value { color: var(--red); }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 12px; text-align: center;
+  }
+  .stat-val { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text); }
+  .stat-key { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 3px; }
+
+  /* SIGNAL */
+  .signal-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; background: var(--surface2);
+    border-radius: 8px; border: 1px solid var(--border);
+  }
+  .signal-label { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
+  .signal-badge { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 4px; }
+  .signal-badge.bullish { background: rgba(0,229,160,0.15); color: var(--green); border: 1px solid rgba(0,229,160,0.3); }
+  .signal-badge.bearish { background: rgba(255,69,96,0.15); color: var(--red); border: 1px solid rgba(255,69,96,0.3); }
+  .signal-badge.neutral { background: rgba(255,209,102,0.1); color: var(--yellow); border: 1px solid rgba(255,209,102,0.25); }
+
+  /* ANALYSIS */
+  .analysis-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+  }
+  .analysis-title { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 8px; }
+  .analysis-text { font-family: var(--sans); font-size: 13px; line-height: 1.6; color: #9ba5b5; }
+
+  /* VERIFY BUTTONS */
+  .verify-row {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .verify-label {
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+    letter-spacing: 1px; white-space: nowrap;
+  }
+  .verify-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.5px; padding: 5px 11px; border-radius: 4px;
+    text-decoration: none; transition: all 0.18s; border: 1px solid;
+  }
+  .verify-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .verify-btn.stockbit {
+    color: #4fc3f7; border-color: rgba(79,195,247,0.3);
+    background: rgba(79,195,247,0.08);
+  }
+  .verify-btn.tradingview {
+    color: #b39ddb; border-color: rgba(179,157,219,0.3);
+    background: rgba(179,157,219,0.08);
+  }
+  .verify-btn.google {
+    color: #a5d6a7; border-color: rgba(165,214,167,0.3);
+    background: rgba(165,214,167,0.08);
+  }
+
+  /* SKELETON */
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+    background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .empty-state .big { font-size: 40px; margin-bottom: 12px; }
+
+  footer {
+    position: relative; z-index: 1; padding: 20px 40px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    display: flex; justify-content: space-between;
+  }
+
+  @media (max-width: 768px) {
+    .header, .main, footer { padding-left: 20px; padding-right: 20px; }
+    .stocks-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <span class="logo-main">IDX S/R Tracker</span>
+    <span class="logo-tag">AI-POWERED</span>
+  </div>
+  <div class="header-right">
+    <span class="last-updated" id="lastUpdated">—</span>
+    <button class="refresh-btn" id="refreshBtn" onclick="analyzeAll()">
+      <span id="refreshIcon">↻</span> ANALYZE
+    </button>
+  </div>
+</header>
+
+<main class="main">
+  <div class="status-bar" id="statusBar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Click ANALYZE — Claude AI akan web search harga nyata IDX lalu hitung S/R levels.</span>
+  </div>
+
+  <div class="source-note">
+    📺 Chart: <span>TradingView</span> (data real-time IDX, langsung dari exchange) &nbsp;·&nbsp;
+    🤖 S/R: <span>Claude AI</span> dengan web search harga terkini &nbsp;·&nbsp;
+    ⚠️ <span style="color:var(--yellow)">Catatan:</span> level S/R adalah hasil analisis teknikal, bukan prediksi pasti
+  </div>
+
+  <div class="stocks-grid" id="stocksGrid">
+    <div class="stock-card" id="card-IRSX">
+      <div class="card-header">
+        <div><div class="ticker">IRSX</div><div class="exchange-badge">IDX · Indonesia</div></div>
+        <div class="price-block"><div style="color:var(--muted);font-family:var(--mono);font-size:16px">—</div></div>
+      </div>
+      <div class="card-body"><div class="empty-state"><div class="big">📊</div><div>Awaiting analysis</div></div></div>
+    </div>
+    <div class="stock-card" id="card-BULL">
+      <div class="card-header">
+        <div><div class="ticker">BULL</div><div class="exchange-badge">IDX · Indonesia</div></div>
+        <div class="price-block"><div style="color:var(--muted);font-family:var(--mono);font-size:16px">—</div></div>
+      </div>
+      <div class="card-body"><div class="empty-state"><div class="big">📊</div><div>Awaiting analysis</div></div></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span>IDX S/R Tracker · Chart: TradingView · Analysis: Claude AI</span>
+  <span>Untuk keperluan informasi saja. Bukan saran investasi.</span>
+</footer>
+
+<script>
+const TICKERS = ['IRSX', 'BULL'];
+const fmt = n => n != null ? 'Rp ' + Number(n).toLocaleString('id-ID') : '—';
+
+/* ── TradingView widget HTML ── */
+function tvWidgetHTML(ticker) {
+  // IDX tickers on TradingView use IDX: prefix e.g. IDX:IRSX
+  const tvSymbol = `IDX:${ticker}`;
+  // Use TradingView mini chart widget (no login required, embed-friendly)
+  return `
+    <iframe
+      src="https://s.tradingview.com/widgetembed/?frameElementId=tv_${ticker}&symbol=${tvSymbol}&interval=D&hidesidetoolbar=1&hidetoptoolbar=0&symboledit=0&saveimage=0&toolbarbg=131722&studies=[]&theme=dark&style=1&timezone=Asia%2FJakarta&withdateranges=1&showpopupbutton=0&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=id&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=${tvSymbol}"
+      id="tv_${ticker}"
+      style="width:100%;height:300px;border:none;"
+      allowtransparency="true"
+      scrolling="no"
+    ></iframe>`;
+}
+
+/* ── Status helpers ── */
+function setStatus(msg, state = 'active') {
+  document.getElementById('statusText').textContent = msg;
+  document.getElementById('statusDot').className = 'status-dot ' + state;
+}
+function setLoading(v) {
+  const btn = document.getElementById('refreshBtn');
+  const ico = document.getElementById('refreshIcon');
+  btn.disabled = v;
+  ico.textContent = v ? '⟳' : '↻';
+  ico.className   = v ? 'spin' : '';
+}
+
+/* ── Loading skeleton ── */
+function showLoadingCard(ticker) {
+  const card = document.getElementById(`card-${ticker}`);
+  card.innerHTML = `
+    <div class="card-header">
+      <div><div class="ticker">${ticker}</div><div class="exchange-badge">IDX · Indonesia</div></div>
+      <div class="price-block">
+        <div class="skeleton" style="width:120px;height:26px"></div>
+        <div class="skeleton" style="width:70px;height:12px;margin-top:6px"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="skeleton" style="height:300px;border-radius:8px"></div>
+      <div class="skeleton" style="height:56px;border-radius:6px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="skeleton" style="height:100px"></div>
+        <div class="skeleton" style="height:100px"></div>
+      </div>
+      <div class="skeleton" style="height:44px"></div>
+      <div class="skeleton" style="height:80px"></div>
+    </div>`;
+}
+
+/* ── Render full card ── */
+function renderCard(ticker, data) {
+  const {
+    price, change, changePct,
+    resistance1, resistance2, resistance3,
+    support1, support2, support3,
+    high52w, low52w, volume,
+    signal, analysis
+  } = data;
+
+  const chgClass  = (change || 0) >= 0 ? 'up' : 'down';
+  const chgPrefix = (change || 0) >= 0 ? '+' : '';
+  const sigClass  = (signal || '').toLowerCase().includes('bullish') ? 'bullish'
+                  : (signal || '').toLowerCase().includes('bearish') ? 'bearish' : 'neutral';
+
+  // S/R bar position
+  const sFloor = Math.min(support3 || support1, support2 || support1, support1);
+  const rCeil  = Math.max(resistance3 || resistance1, resistance2 || resistance1, resistance1);
+  const barRange = rCeil - sFloor;
+  const barPct   = barRange > 0
+    ? Math.min(100, Math.max(0, ((price - sFloor) / barRange) * 100))
+    : 50;
+
+  const card = document.getElementById(`card-${ticker}`);
+  card.innerHTML = `
+    <div class="card-header">
+      <div><div class="ticker">${ticker}</div><div class="exchange-badge">IDX · Indonesia</div></div>
+      <div class="price-block">
+        <div class="current-price">${fmt(price)}</div>
+        <div class="price-change ${chgClass}">${chgPrefix}${change || 0} (${chgPrefix}${changePct || 0}%)</div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <!-- TradingView Chart -->
+      <div class="tv-chart-wrap">
+        ${tvWidgetHTML(ticker)}
+        <div class="tv-chart-label">TRADINGVIEW</div>
+      </div>
+
+      <!-- S/R Position Bar -->
+      <div class="sr-visual">
+        <div class="sr-fill" style="width:${barPct}%"></div>
+        <div class="sr-current-line" style="left:${barPct}%"></div>
+        <div class="sr-labels">
+          <div class="sr-label support">
+            <span class="sr-val">${fmt(support1)}</span>
+            <span class="sr-tag">S1</span>
+          </div>
+          <div class="sr-label" style="color:var(--yellow);font-family:var(--mono);font-size:10px;text-align:center">
+            <span style="font-size:11px;font-weight:700">${fmt(price)}</span>
+            <span style="font-size:9px;opacity:0.7;letter-spacing:1px">LAST</span>
+          </div>
+          <div class="sr-label resistance">
+            <span class="sr-val">${fmt(resistance1)}</span>
+            <span class="sr-tag">R1</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Level Table -->
+      <div class="levels-grid">
+        <div class="level-group resistance-group">
+          <div class="level-group-title"><div class="dot"></div>RESISTANCE</div>
+          ${resistance1 ? `<div class="level-row"><span class="level-label">R1</span><span class="level-value">${fmt(resistance1)}</span></div>` : ''}
+          ${resistance2 ? `<div class="level-row"><span class="level-label">R2</span><span class="level-value">${fmt(resistance2)}</span></div>` : ''}
+          ${resistance3 ? `<div class="level-row"><span class="level-label">R3</span><span class="level-value">${fmt(resistance3)}</span></div>` : ''}
+        </div>
+        <div class="level-group support-group">
+          <div class="level-group-title"><div class="dot"></div>SUPPORT</div>
+          ${support1 ? `<div class="level-row"><span class="level-label">S1</span><span class="level-value">${fmt(support1)}</span></div>` : ''}
+          ${support2 ? `<div class="level-row"><span class="level-label">S2</span><span class="level-value">${fmt(support2)}</span></div>` : ''}
+          ${support3 ? `<div class="level-row"><span class="level-label">S3</span><span class="level-value">${fmt(support3)}</span></div>` : ''}
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-val">${high52w ? fmt(high52w) : '—'}</div><div class="stat-key">52W HIGH</div></div>
+        <div class="stat-box"><div class="stat-val">${low52w  ? fmt(low52w)  : '—'}</div><div class="stat-key">52W LOW</div></div>
+        <div class="stat-box"><div class="stat-val">${volume  || '—'}</div><div class="stat-key">VOLUME</div></div>
+      </div>
+
+      <!-- Signal -->
+      <div class="signal-row">
+        <span class="signal-label">MARKET SIGNAL</span>
+        <span class="signal-badge ${sigClass}">${(signal || 'N/A').toUpperCase()}</span>
+      </div>
+
+      <!-- Analysis -->
+      <div class="analysis-box">
+        <div class="analysis-title">// ANALISIS TEKNIKAL AI</div>
+        <div class="analysis-text">${analysis || '—'}</div>
+      </div>
+
+      <!-- Verify Price Buttons -->
+      <div class="verify-row">
+        <span class="verify-label">CEK HARGA:</span>
+        <a class="verify-btn stockbit"
+           href="https://stockbit.com/symbol/${ticker}"
+           target="_blank" rel="noopener">
+          ↗ Stockbit
+        </a>
+        <a class="verify-btn tradingview"
+           href="https://www.tradingview.com/symbols/IDX-${ticker}/"
+           target="_blank" rel="noopener">
+          ↗ TradingView
+        </a>
+        <a class="verify-btn google"
+           href="https://www.google.com/search?q=${ticker}+IDX+stock+price"
+           target="_blank" rel="noopener">
+          ↗ Google
+        </a>
+      </div>
+    </div>`;
+}
+
+function renderError(ticker, msg) {
+  const card = document.getElementById(`card-${ticker}`);
+  card.innerHTML = `
+    <div class="card-header">
+      <div><div class="ticker">${ticker}</div><div class="exchange-badge">IDX · Indonesia</div></div>
+    </div>
+    <div class="card-body">
+      <div class="empty-state">
+        <div class="big">⚠️</div>
+        <div style="color:var(--red);margin-bottom:8px">${msg}</div>
+        <div style="font-size:11px;color:var(--muted)">Coba klik ANALYZE lagi</div>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════
+   CLAUDE AI — web search harga nyata + analisis S/R
+   Dua panggilan terpisah:
+   1) Cari harga, OHLC recent, volume
+   2) Analisis S/R dari data tersebut
+══════════════════════════════════════════════════ */
+async function callClaude(messages, maxTokens = 700) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages
+    })
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    // Parse rate limit errors into a friendly message
+    const rawMsg = e.error?.message || '';
+    let friendlyMsg = rawMsg;
+    try {
+      // Strip "BULL Error: " or similar prefix then parse JSON
+      const jsonMatch = rawMsg.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const rl = JSON.parse(jsonMatch[0]);
+        if (rl.type === 'exceeded_limit' || rl.windows) {
+          const win5h = rl.windows?.['5h'];
+          if (win5h && win5h.resets_at) {
+            const resetDate = new Date(win5h.resets_at * 1000);
+            const resetStr = resetDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const resetRelMin = Math.ceil((win5h.resets_at * 1000 - Date.now()) / 60000);
+            friendlyMsg = `Rate limit API tercapai (kuota 5 jam habis). Reset sekitar pukul ${resetStr} (~${resetRelMin} menit lagi). Coba lagi nanti.`;
+          } else if (rl.resetsAt) {
+            const resetDate = new Date(rl.resetsAt * 1000);
+            const resetStr = resetDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const resetRelMin = Math.ceil((rl.resetsAt * 1000 - Date.now()) / 60000);
+            friendlyMsg = `Rate limit API tercapai. Reset sekitar pukul ${resetStr} (~${resetRelMin} menit lagi). Coba lagi nanti.`;
+          } else {
+            friendlyMsg = 'Rate limit API tercapai. Coba lagi dalam beberapa menit.';
+          }
+        }
+      }
+    } catch (_) { /* keep rawMsg */ }
+    throw new Error(friendlyMsg || `API error ${res.status}`);
+  }
+  const data = await res.json();
+  return data.content
+    .map(b => b.type === 'text' ? b.text : '')
+    .filter(Boolean).join('\n');
+}
+
+async function analyzeStock(ticker) {
+  // Single combined call: web search + S/R analysis in one request
+  const prompt = `Cari harga saham ${ticker} di Bursa Efek Indonesia (IDX) hari ini menggunakan web search. Sumber: Yahoo Finance (${ticker}.JK), Stockbit, IDX.co.id. Setelah dapat data, analisis S/R langsung. Balas HANYA JSON valid tanpa teks lain: {"price":1234,"change":12,"changePct":0.98,"high52w":1600,"low52w":900,"volume":"8.2M","resistance1":1300,"resistance2":1400,"resistance3":1500,"support1":1150,"support2":1080,"support3":1000,"signal":"Bullish","analysis":"Analisis 2-3 kalimat Bahasa Indonesia."} Semua harga IDR integer. resistance1 > price, support1 < price.`;
+  const rawText = await callClaude([{ role: 'user', content: prompt }], 700);
+  const m = rawText.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('Tidak ada data dari pencarian');
+  const data = JSON.parse(m[0]);
+  if (!data.price) throw new Error('Harga tidak ditemukan dari web search');
+  return data;
+}
+
+
+/* ── Main ── */
+async function analyzeAll() {
+  setLoading(true);
+  TICKERS.forEach(t => showLoadingCard(t));
+  setStatus('Memulai analisis…', 'active');
+
+  const results = [];
+  for (let i = 0; i < TICKERS.length; i++) {
+    const ticker = TICKERS[i];
+    try {
+      setStatus(`[${i+1}/2] Web search harga ${ticker} dari IDX…`, 'active');
+      const data = await analyzeStock(ticker);
+      renderCard(ticker, data);
+      results.push({ ticker, ok: true });
+    } catch (err) {
+      console.error(ticker, err);
+      renderError(ticker, err.message || 'Terjadi kesalahan');
+      results.push({ ticker, ok: false });
+    }
+  }
+
+  const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  document.getElementById('lastUpdated').textContent = 'Update ' + now;
+  const allOk = results.every(r => r.ok);
+  setStatus(
+    allOk
+      ? `✓ Selesai · Chart: TradingView real-time · S/R: Claude AI · ${now}`
+      : `Sebagian gagal: ${results.filter(r => !r.ok).map(r => r.ticker).join(', ')}`,
+    allOk ? 'done' : 'error'
+  );
+  setLoading(false);
+}
+</script>
+</body>
+</html>
