@@ -119,13 +119,10 @@
   .tv-chart-wrap {
     border-radius: 8px; overflow: hidden;
     border: 1px solid var(--border);
-    background: #131722; /* TradingView dark bg */
+    background: #131722;
     position: relative;
   }
-  .tv-chart-wrap iframe {
-    display: block; width: 100%; border: none;
-    height: 300px;
-  }
+  .tv-chart-wrap iframe { display: block; width: 100%; border: none; height: 300px; }
   .tv-chart-label {
     position: absolute; top: 8px; right: 10px;
     font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,0.25);
@@ -184,7 +181,7 @@
   .support-group .level-value { color: var(--red); }
 
   /* STATS */
-  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .stat-box {
     background: var(--surface2); border: 1px solid var(--border);
     border-radius: 6px; padding: 10px 12px; text-align: center;
@@ -212,14 +209,23 @@
   .analysis-title { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 8px; }
   .analysis-text { font-family: var(--sans); font-size: 13px; line-height: 1.6; color: #9ba5b5; }
 
+  /* INDICATORS ROW */
+  .indicators-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .ind-box {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 12px; text-align: center;
+  }
+  .ind-val { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+  .ind-val.bullish { color: var(--green); }
+  .ind-val.bearish { color: var(--red); }
+  .ind-val.neutral { color: var(--yellow); }
+  .ind-key { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 3px; }
+
   /* VERIFY BUTTONS */
-  .verify-row {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  }
-  .verify-label {
-    font-family: var(--mono); font-size: 10px; color: var(--muted);
-    letter-spacing: 1px; white-space: nowrap;
-  }
+  .verify-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .verify-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; white-space: nowrap; }
   .verify-btn {
     display: inline-flex; align-items: center; gap: 5px;
     font-family: var(--mono); font-size: 10px; font-weight: 700;
@@ -227,18 +233,9 @@
     text-decoration: none; transition: all 0.18s; border: 1px solid;
   }
   .verify-btn:hover { opacity: 0.85; transform: translateY(-1px); }
-  .verify-btn.stockbit {
-    color: #4fc3f7; border-color: rgba(79,195,247,0.3);
-    background: rgba(79,195,247,0.08);
-  }
-  .verify-btn.tradingview {
-    color: #b39ddb; border-color: rgba(179,157,219,0.3);
-    background: rgba(179,157,219,0.08);
-  }
-  .verify-btn.google {
-    color: #a5d6a7; border-color: rgba(165,214,167,0.3);
-    background: rgba(165,214,167,0.08);
-  }
+  .verify-btn.stockbit  { color: #4fc3f7; border-color: rgba(79,195,247,0.3); background: rgba(79,195,247,0.08); }
+  .verify-btn.tradingview { color: #b39ddb; border-color: rgba(179,157,219,0.3); background: rgba(179,157,219,0.08); }
+  .verify-btn.yahoo     { color: #a5d6a7; border-color: rgba(165,214,167,0.3); background: rgba(165,214,167,0.08); }
 
   /* SKELETON */
   .skeleton {
@@ -260,6 +257,7 @@
   @media (max-width: 768px) {
     .header, .main, footer { padding-left: 20px; padding-right: 20px; }
     .stocks-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
     footer { flex-direction: column; gap: 8px; }
   }
 </style>
@@ -269,7 +267,7 @@
 <header class="header">
   <div class="logo">
     <span class="logo-main">IDX S/R Tracker</span>
-    <span class="logo-tag">AI-POWERED</span>
+    <span class="logo-tag">REAL-TIME</span>
   </div>
   <div class="header-right">
     <span class="last-updated" id="lastUpdated">—</span>
@@ -282,13 +280,14 @@
 <main class="main">
   <div class="status-bar" id="statusBar">
     <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">Click ANALYZE — Claude AI akan web search harga nyata IDX lalu hitung S/R levels.</span>
+    <span id="statusText">Klik ANALYZE — data harga dari Yahoo Finance, S/R dihitung otomatis dari OHLC 3 bulan.</span>
   </div>
 
   <div class="source-note">
-    📺 Chart: <span>TradingView</span> (data real-time IDX, langsung dari exchange) &nbsp;·&nbsp;
-    🤖 S/R: <span>Claude AI</span> dengan web search harga terkini &nbsp;·&nbsp;
-    ⚠️ <span style="color:var(--yellow)">Catatan:</span> level S/R adalah hasil analisis teknikal, bukan prediksi pasti
+    📈 Harga: <span>Yahoo Finance</span> (IRSX.JK · BULL.JK) &nbsp;·&nbsp;
+    📺 Chart: <span>TradingView</span> real-time &nbsp;·&nbsp;
+    🧮 S/R: <span>Algoritma Swing High/Low</span> dari data OHLC 3 bulan &nbsp;·&nbsp;
+    ⚠️ <span style="color:var(--yellow)">Bukan saran investasi</span>
   </div>
 
   <div class="stocks-grid" id="stocksGrid">
@@ -310,30 +309,173 @@
 </main>
 
 <footer>
-  <span>IDX S/R Tracker · Chart: TradingView · Analysis: Claude AI</span>
+  <span>IDX S/R Tracker · Harga: Yahoo Finance · Chart: TradingView · S/R: Swing High/Low Algorithm</span>
   <span>Untuk keperluan informasi saja. Bukan saran investasi.</span>
 </footer>
 
 <script>
 const TICKERS = ['IRSX', 'BULL'];
-const fmt = n => n != null ? 'Rp ' + Number(n).toLocaleString('id-ID') : '—';
+const fmt = n => n != null && n > 0 ? 'Rp ' + Number(n).toLocaleString('id-ID') : '—';
 
-/* ── TradingView widget HTML ── */
-function tvWidgetHTML(ticker) {
-  // IDX tickers on TradingView use IDX: prefix e.g. IDX:IRSX
-  const tvSymbol = `IDX:${ticker}`;
-  // Use TradingView mini chart widget (no login required, embed-friendly)
-  return `
-    <iframe
-      src="https://s.tradingview.com/widgetembed/?frameElementId=tv_${ticker}&symbol=${tvSymbol}&interval=D&hidesidetoolbar=1&hidetoptoolbar=0&symboledit=0&saveimage=0&toolbarbg=131722&studies=[]&theme=dark&style=1&timezone=Asia%2FJakarta&withdateranges=1&showpopupbutton=0&studies_overrides={}&overrides={}&enabled_features=[]&disabled_features=[]&locale=id&utm_source=localhost&utm_medium=widget&utm_campaign=chart&utm_term=${tvSymbol}"
-      id="tv_${ticker}"
-      style="width:100%;height:300px;border:none;"
-      allowtransparency="true"
-      scrolling="no"
-    ></iframe>`;
+/* ══════════════════════════════════════════════════
+   TECHNICAL ANALYSIS ENGINE
+   Pure JS — no AI, no paid API
+══════════════════════════════════════════════════ */
+
+// Simple Moving Average
+function sma(arr, period) {
+  if (arr.length < period) return null;
+  const slice = arr.slice(-period);
+  return Math.round(slice.reduce((a, b) => a + b, 0) / period);
 }
 
-/* ── Status helpers ── */
+// RSI (14-period)
+function rsi(closes, period = 14) {
+  if (closes.length < period + 1) return null;
+  const gains = [], losses = [];
+  for (let i = 1; i <= period; i++) {
+    const diff = closes[closes.length - period - 1 + i] - closes[closes.length - period - 2 + i];
+    gains.push(diff > 0 ? diff : 0);
+    losses.push(diff < 0 ? -diff : 0);
+  }
+  const avgGain = gains.reduce((a,b) => a+b, 0) / period;
+  const avgLoss = losses.reduce((a,b) => a+b, 0) / period;
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return parseFloat((100 - 100 / (1 + rs)).toFixed(1));
+}
+
+// Detect swing highs: a candle whose high is highest among window neighbors
+function swingHighs(ohlc, window = 3) {
+  const highs = [];
+  for (let i = window; i < ohlc.length - window; i++) {
+    const h = ohlc[i].high;
+    let isSwing = true;
+    for (let j = i - window; j <= i + window; j++) {
+      if (j !== i && ohlc[j].high >= h) { isSwing = false; break; }
+    }
+    if (isSwing) highs.push(h);
+  }
+  return highs.sort((a, b) => b - a); // descending
+}
+
+// Detect swing lows: a candle whose low is lowest among window neighbors
+function swingLows(ohlc, window = 3) {
+  const lows = [];
+  for (let i = window; i < ohlc.length - window; i++) {
+    const l = ohlc[i].low;
+    let isSwing = true;
+    for (let j = i - window; j <= i + window; j++) {
+      if (j !== i && ohlc[j].low <= l) { isSwing = false; break; }
+    }
+    if (isSwing) lows.push(l);
+  }
+  return lows.sort((a, b) => a - b); // ascending
+}
+
+// Cluster nearby levels (within 1.5% of each other → merge)
+function clusterLevels(levels, pct = 0.015) {
+  const result = [];
+  for (const lvl of levels) {
+    const existing = result.find(r => Math.abs(r - lvl) / r < pct);
+    if (!existing) result.push(lvl);
+  }
+  return result;
+}
+
+// Round to nearest psychologically clean number
+function roundPsych(n) {
+  if (n >= 10000) return Math.round(n / 500) * 500;
+  if (n >= 1000)  return Math.round(n / 50) * 50;
+  if (n >= 100)   return Math.round(n / 5) * 5;
+  return Math.round(n);
+}
+
+// Main S/R calculator
+function calcSR(ohlc, price) {
+  if (!ohlc || ohlc.length < 10) return null;
+
+  const closes  = ohlc.map(c => c.close);
+  const highs   = ohlc.map(c => c.high);
+  const lows    = ohlc.map(c => c.low);
+
+  // Swing levels
+  const rawResistances = swingHighs(ohlc, 3).map(roundPsych);
+  const rawSupports    = swingLows(ohlc, 3).map(roundPsych);
+
+  // Add 52w-style levels: recent period high/low
+  const periodHigh = Math.round(Math.max(...highs.slice(-20)));
+  const periodLow  = Math.round(Math.min(...lows.slice(-20)));
+  rawResistances.push(roundPsych(periodHigh));
+  rawSupports.push(roundPsych(periodLow));
+
+  // Filter: resistances must be > price, supports must be < price
+  const resistances = clusterLevels(rawResistances.filter(r => r > price)).slice(0, 3);
+  const supports    = clusterLevels(rawSupports.filter(s => s < price)).slice(0, 3);
+
+  // Indicators
+  const ma20    = sma(closes, 20);
+  const ma50    = sma(closes, 50);
+  const rsiVal  = rsi(closes, 14);
+
+  // Signal logic
+  const aboveMa20 = ma20 && price > ma20;
+  const aboveMa50 = ma50 && price > ma50;
+  const rsiOk     = rsiVal !== null && rsiVal > 45 && rsiVal < 75;
+  const rsiBear   = rsiVal !== null && rsiVal < 40;
+
+  let signal = 'Neutral';
+  if (aboveMa20 && aboveMa50 && rsiOk) signal = 'Bullish';
+  else if (!aboveMa20 && !aboveMa50 && rsiBear) signal = 'Bearish';
+  else if (aboveMa20 || aboveMa50) signal = 'Bullish';
+  else signal = 'Bearish';
+
+  // Generate analysis text
+  const nearestR = resistances[0] || null;
+  const nearestS = supports[0] || null;
+  const rsiDesc  = rsiVal > 70 ? 'overbought' : rsiVal < 30 ? 'oversold' : `${rsiVal}`;
+  let analysis = '';
+  if (signal === 'Bullish') {
+    analysis = `Harga berada di atas MA${ma50 ? '20 & MA50' : '20'}, menunjukkan tren naik jangka pendek.`;
+    if (nearestR) analysis += ` Resistance terdekat di ${fmt(nearestR)} perlu ditembus untuk konfirmasi lanjutan.`;
+    if (rsiVal)   analysis += ` RSI ${rsiDesc}${rsiVal > 60 ? ', waspadai potensi koreksi.' : ', momentum masih kuat.'}`;
+  } else if (signal === 'Bearish') {
+    analysis = `Harga berada di bawah MA${ma50 ? '20 & MA50' : '20'}, tekanan jual mendominasi.`;
+    if (nearestS) analysis += ` Support terdekat di ${fmt(nearestS)} menjadi area pantauan.`;
+    if (rsiVal)   analysis += ` RSI ${rsiDesc}${rsiVal < 30 ? ', potensi rebound teknikal.' : '.'}`;
+  } else {
+    analysis = `Harga bergerak sideways di antara support dan resistance.`;
+    if (nearestS && nearestR) analysis += ` Pantau range ${fmt(nearestS)}–${fmt(nearestR)} untuk breakout.`;
+    if (rsiVal)   analysis += ` RSI di ${rsiDesc}, belum ada sinyal kuat.`;
+  }
+
+  return {
+    resistance1: resistances[0] || null,
+    resistance2: resistances[1] || null,
+    resistance3: resistances[2] || null,
+    support1: supports[0] || null,
+    support2: supports[1] || null,
+    support3: supports[2] || null,
+    signal, analysis,
+    ma20, ma50, rsiVal,
+  };
+}
+
+/* ══════════════════════════════════════════════════
+   DATA FETCHING — Yahoo Finance via /api/stock
+══════════════════════════════════════════════════ */
+async function fetchStock(ticker) {
+  const res = await fetch(`/api/stock?ticker=${ticker}`);
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.error || `Gagal fetch data ${ticker}`);
+  }
+  return res.json();
+}
+
+/* ══════════════════════════════════════════════════
+   UI HELPERS
+══════════════════════════════════════════════════ */
 function setStatus(msg, state = 'active') {
   document.getElementById('statusText').textContent = msg;
   document.getElementById('statusDot').className = 'status-dot ' + state;
@@ -346,7 +488,13 @@ function setLoading(v) {
   ico.className   = v ? 'spin' : '';
 }
 
-/* ── Loading skeleton ── */
+function tvWidgetHTML(ticker) {
+  const tvSymbol = `IDX:${ticker}`;
+  return `<iframe
+    src="https://s.tradingview.com/widgetembed/?frameElementId=tv_${ticker}&symbol=${tvSymbol}&interval=D&hidesidetoolbar=1&hidetoptoolbar=0&symboledit=0&saveimage=0&toolbarbg=131722&studies=[]&theme=dark&style=1&timezone=Asia%2FJakarta&withdateranges=1&showpopupbutton=0&locale=id"
+    id="tv_${ticker}" style="width:100%;height:300px;border:none;" allowtransparency="true" scrolling="no"></iframe>`;
+}
+
 function showLoadingCard(ticker) {
   const card = document.getElementById(`card-${ticker}`);
   card.innerHTML = `
@@ -369,28 +517,27 @@ function showLoadingCard(ticker) {
     </div>`;
 }
 
-/* ── Render full card ── */
-function renderCard(ticker, data) {
-  const {
-    price, change, changePct,
-    resistance1, resistance2, resistance3,
-    support1, support2, support3,
-    high52w, low52w, volume,
-    signal, analysis
-  } = data;
+function renderCard(ticker, stockData, sr) {
+  const { price, change, changePct, high52w, low52w, volume } = stockData;
+  const { resistance1, resistance2, resistance3,
+          support1, support2, support3,
+          signal, analysis, ma20, ma50, rsiVal } = sr;
 
   const chgClass  = (change || 0) >= 0 ? 'up' : 'down';
   const chgPrefix = (change || 0) >= 0 ? '+' : '';
-  const sigClass  = (signal || '').toLowerCase().includes('bullish') ? 'bullish'
-                  : (signal || '').toLowerCase().includes('bearish') ? 'bearish' : 'neutral';
+  const sigClass  = signal.toLowerCase().includes('bullish') ? 'bullish'
+                  : signal.toLowerCase().includes('bearish') ? 'bearish' : 'neutral';
 
   // S/R bar position
-  const sFloor = Math.min(support3 || support1, support2 || support1, support1);
-  const rCeil  = Math.max(resistance3 || resistance1, resistance2 || resistance1, resistance1);
+  const sFloor  = Math.min(support3 || support1, support2 || support1, support1 || price * 0.9);
+  const rCeil   = Math.max(resistance3 || resistance1, resistance2 || resistance1, resistance1 || price * 1.1);
   const barRange = rCeil - sFloor;
   const barPct   = barRange > 0
     ? Math.min(100, Math.max(0, ((price - sFloor) / barRange) * 100))
     : 50;
+
+  // RSI color
+  const rsiClass = rsiVal > 70 ? 'bearish' : rsiVal < 30 ? 'bullish' : rsiVal > 55 ? 'bullish' : 'neutral';
 
   const card = document.getElementById(`card-${ticker}`);
   card.innerHTML = `
@@ -450,18 +597,35 @@ function renderCard(ticker, data) {
         <div class="stat-box"><div class="stat-val">${high52w ? fmt(high52w) : '—'}</div><div class="stat-key">52W HIGH</div></div>
         <div class="stat-box"><div class="stat-val">${low52w  ? fmt(low52w)  : '—'}</div><div class="stat-key">52W LOW</div></div>
         <div class="stat-box"><div class="stat-val">${volume  || '—'}</div><div class="stat-key">VOLUME</div></div>
+        <div class="stat-box"><div class="stat-val ${rsiClass}">${rsiVal ?? '—'}</div><div class="stat-key">RSI 14</div></div>
+      </div>
+
+      <!-- Indicators -->
+      <div class="indicators-row">
+        <div class="ind-box">
+          <div class="ind-val ${ma20 && price > ma20 ? 'bullish' : 'bearish'}">${ma20 ? fmt(ma20) : '—'}</div>
+          <div class="ind-key">MA 20</div>
+        </div>
+        <div class="ind-box">
+          <div class="ind-val ${ma50 && price > ma50 ? 'bullish' : 'bearish'}">${ma50 ? fmt(ma50) : '—'}</div>
+          <div class="ind-key">MA 50</div>
+        </div>
+        <div class="ind-box">
+          <div class="ind-val ${sigClass}">${signal.toUpperCase()}</div>
+          <div class="ind-key">SIGNAL</div>
+        </div>
       </div>
 
       <!-- Signal -->
       <div class="signal-row">
         <span class="signal-label">MARKET SIGNAL</span>
-        <span class="signal-badge ${sigClass}">${(signal || 'N/A').toUpperCase()}</span>
+        <span class="signal-badge ${sigClass}">${signal.toUpperCase()}</span>
       </div>
 
       <!-- Analysis -->
       <div class="analysis-box">
-        <div class="analysis-title">// ANALISIS TEKNIKAL AI</div>
-        <div class="analysis-text">${analysis || '—'}</div>
+        <div class="analysis-title">// ANALISIS TEKNIKAL</div>
+        <div class="analysis-text">${analysis}</div>
       </div>
 
       <!-- Verify Price Buttons -->
@@ -469,19 +633,13 @@ function renderCard(ticker, data) {
         <span class="verify-label">CEK HARGA:</span>
         <a class="verify-btn stockbit"
            href="https://stockbit.com/symbol/${ticker}"
-           target="_blank" rel="noopener">
-          ↗ Stockbit
-        </a>
+           target="_blank" rel="noopener">↗ Stockbit</a>
         <a class="verify-btn tradingview"
            href="https://www.tradingview.com/symbols/IDX-${ticker}/"
-           target="_blank" rel="noopener">
-          ↗ TradingView
-        </a>
-        <a class="verify-btn google"
-           href="https://www.google.com/search?q=${ticker}+IDX+stock+price"
-           target="_blank" rel="noopener">
-          ↗ Google
-        </a>
+           target="_blank" rel="noopener">↗ TradingView</a>
+        <a class="verify-btn yahoo"
+           href="https://finance.yahoo.com/quote/${ticker}.JK"
+           target="_blank" rel="noopener">↗ Yahoo Finance</a>
       </div>
     </div>`;
 }
@@ -502,83 +660,25 @@ function renderError(ticker, msg) {
 }
 
 /* ══════════════════════════════════════════════════
-   CLAUDE AI — web search harga nyata + analisis S/R
-   Dua panggilan terpisah:
-   1) Cari harga, OHLC recent, volume
-   2) Analisis S/R dari data tersebut
+   MAIN
 ══════════════════════════════════════════════════ */
-async function callClaude(messages, maxTokens = 700) {
-  const res = await fetch('/api/claude', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: maxTokens,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages
-    })
-  });
-  if (!res.ok) {
-    const e = await res.json().catch(() => ({}));
-    // Parse rate limit errors into a friendly message
-    const rawMsg = e.error?.message || '';
-    let friendlyMsg = rawMsg;
-    try {
-      // Strip "BULL Error: " or similar prefix then parse JSON
-      const jsonMatch = rawMsg.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const rl = JSON.parse(jsonMatch[0]);
-        if (rl.type === 'exceeded_limit' || rl.windows) {
-          const win5h = rl.windows?.['5h'];
-          if (win5h && win5h.resets_at) {
-            const resetDate = new Date(win5h.resets_at * 1000);
-            const resetStr = resetDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            const resetRelMin = Math.ceil((win5h.resets_at * 1000 - Date.now()) / 60000);
-            friendlyMsg = `Rate limit API tercapai (kuota 5 jam habis). Reset sekitar pukul ${resetStr} (~${resetRelMin} menit lagi). Coba lagi nanti.`;
-          } else if (rl.resetsAt) {
-            const resetDate = new Date(rl.resetsAt * 1000);
-            const resetStr = resetDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            const resetRelMin = Math.ceil((rl.resetsAt * 1000 - Date.now()) / 60000);
-            friendlyMsg = `Rate limit API tercapai. Reset sekitar pukul ${resetStr} (~${resetRelMin} menit lagi). Coba lagi nanti.`;
-          } else {
-            friendlyMsg = 'Rate limit API tercapai. Coba lagi dalam beberapa menit.';
-          }
-        }
-      }
-    } catch (_) { /* keep rawMsg */ }
-    throw new Error(friendlyMsg || `API error ${res.status}`);
-  }
-  const data = await res.json();
-  return data.content
-    .map(b => b.type === 'text' ? b.text : '')
-    .filter(Boolean).join('\n');
-}
-
-async function analyzeStock(ticker) {
-  // Single combined call: web search + S/R analysis in one request
-  const prompt = `Cari harga saham ${ticker} di Bursa Efek Indonesia (IDX) hari ini menggunakan web search. Sumber: Yahoo Finance (${ticker}.JK), Stockbit, IDX.co.id. Setelah dapat data, analisis S/R langsung. Balas HANYA JSON valid tanpa teks lain: {"price":1234,"change":12,"changePct":0.98,"high52w":1600,"low52w":900,"volume":"8.2M","resistance1":1300,"resistance2":1400,"resistance3":1500,"support1":1150,"support2":1080,"support3":1000,"signal":"Bullish","analysis":"Analisis 2-3 kalimat Bahasa Indonesia."} Semua harga IDR integer. resistance1 > price, support1 < price.`;
-  const rawText = await callClaude([{ role: 'user', content: prompt }], 700);
-  const m = rawText.match(/\{[\s\S]*\}/);
-  if (!m) throw new Error('Tidak ada data dari pencarian');
-  const data = JSON.parse(m[0]);
-  if (!data.price) throw new Error('Harga tidak ditemukan dari web search');
-  return data;
-}
-
-
-/* ── Main ── */
 async function analyzeAll() {
   setLoading(true);
   TICKERS.forEach(t => showLoadingCard(t));
-  setStatus('Memulai analisis…', 'active');
+  setStatus('Mengambil data dari Yahoo Finance…', 'active');
 
   const results = [];
   for (let i = 0; i < TICKERS.length; i++) {
     const ticker = TICKERS[i];
     try {
-      setStatus(`[${i+1}/2] Web search harga ${ticker} dari IDX…`, 'active');
-      const data = await analyzeStock(ticker);
-      renderCard(ticker, data);
+      setStatus(`[${i+1}/${TICKERS.length}] Fetching ${ticker}.JK dari Yahoo Finance…`, 'active');
+      const stockData = await fetchStock(ticker);
+
+      setStatus(`[${i+1}/${TICKERS.length}] Menghitung S/R levels ${ticker}…`, 'active');
+      const sr = calcSR(stockData.ohlc, stockData.price);
+      if (!sr) throw new Error('Data OHLC tidak cukup untuk menghitung S/R');
+
+      renderCard(ticker, stockData, sr);
       results.push({ ticker, ok: true });
     } catch (err) {
       console.error(ticker, err);
@@ -592,7 +692,7 @@ async function analyzeAll() {
   const allOk = results.every(r => r.ok);
   setStatus(
     allOk
-      ? `✓ Selesai · Chart: TradingView real-time · S/R: Claude AI · ${now}`
+      ? `✓ Selesai · Yahoo Finance · Swing High/Low · ${now}`
       : `Sebagian gagal: ${results.filter(r => !r.ok).map(r => r.ticker).join(', ')}`,
     allOk ? 'done' : 'error'
   );
