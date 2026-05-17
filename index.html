@@ -155,30 +155,51 @@
   .sr-label.support    { color: var(--red); }
   .sr-label.resistance { color: var(--green); }
 
-  /* LEVEL TABLE */
-  .levels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .level-group {
+  /* ACTIONABLE LEVEL TABLES */
+  .sr-tables { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sr-table-wrap {
     background: var(--surface2); border-radius: 8px;
-    border: 1px solid var(--border); padding: 12px 14px;
+    border: 1px solid var(--border); overflow: hidden;
   }
-  .level-group-title {
+  .sr-table-title {
     font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px;
-    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+    padding: 9px 12px; display: flex; align-items: center; gap: 6px;
+    border-bottom: 1px solid var(--border);
   }
-  .level-group-title .dot { width: 6px; height: 6px; border-radius: 50%; }
-  .resistance-group .level-group-title { color: var(--green); }
-  .resistance-group .dot { background: var(--green); }
-  .support-group .level-group-title { color: var(--red); }
-  .support-group .dot { background: var(--red); }
-  .level-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  .sr-table-title .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .resistance-table .sr-table-title { color: var(--green); background: rgba(0,229,160,0.04); }
+  .resistance-table .dot { background: var(--green); }
+  .support-table .sr-table-title { color: var(--red); background: rgba(255,69,96,0.04); }
+  .support-table .dot { background: var(--red); }
+
+  .sr-table { width: 100%; border-collapse: collapse; }
+  .sr-table thead th {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1px;
+    color: var(--muted); padding: 6px 10px; text-align: right;
+    border-bottom: 1px solid var(--border); font-weight: 400;
   }
-  .level-row:last-child { border-bottom: none; }
-  .level-label { font-family: var(--mono); font-size: 10px; color: var(--muted); }
-  .level-value { font-family: var(--mono); font-size: 13px; font-weight: 700; }
-  .resistance-group .level-value { color: var(--green); }
-  .support-group .level-value { color: var(--red); }
+  .sr-table thead th:first-child { text-align: left; }
+  .sr-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .sr-table tbody tr:last-child { border-bottom: none; }
+  .sr-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+  .sr-table td {
+    font-family: var(--mono); font-size: 11px;
+    padding: 7px 10px; text-align: right; vertical-align: middle;
+  }
+  .sr-table td:first-child {
+    text-align: left; font-weight: 700; font-size: 10px; letter-spacing: 0.5px;
+  }
+  .sr-table td.level-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 26px;
+  }
+  .resistance-table td:first-child { color: var(--green); }
+  .support-table td:first-child { color: var(--red); }
+  .resistance-table .price-col { color: var(--text); font-weight: 700; font-size: 12px; }
+  .support-table .price-col { color: var(--text); font-weight: 700; font-size: 12px; }
+  .entry-col  { color: #81d4fa; }  /* light blue — entry/re-entry */
+  .sl-col     { color: var(--red); opacity: 0.8; }
+  .na-col     { color: var(--muted); font-size: 10px; }
 
   /* STATS */
   .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -585,13 +606,40 @@ function clusterLevels(levels, pct = 0.012) {
   return result;
 }
 
-// Round to psychologically clean number
+// IDX Official Tick Size (Fraksi Harga)
+// 50–200 → tick 1 | 200–500 → tick 2 | 500–2000 → tick 5
+// 2000–5000 → tick 10 | >5000 → tick 25
+function tickSize(price) {
+  if (price < 200)  return 1;
+  if (price < 500)  return 2;
+  if (price < 2000) return 5;
+  if (price < 5000) return 10;
+  return 25;
+}
+
+// Snap a price to the nearest valid IDX tick
+function snapToTick(price) {
+  const t = tickSize(price);
+  return Math.round(price / t) * t;
+}
+
+// Move N ticks up from a price (handles cross-boundary tick changes)
+function ticksUp(price, n = 2) {
+  let p = price;
+  for (let i = 0; i < n; i++) p += tickSize(p);
+  return snapToTick(p);
+}
+
+// Move N ticks down from a price
+function ticksDown(price, n = 2) {
+  let p = price;
+  for (let i = 0; i < n; i++) p -= tickSize(p);
+  return snapToTick(p);
+}
+
+// Round to nearest valid IDX tick (replaces roundPsych)
 function roundPsych(n) {
-  if (n >= 50000) return Math.round(n / 1000) * 1000;
-  if (n >= 10000) return Math.round(n / 500) * 500;
-  if (n >= 1000)  return Math.round(n / 50) * 50;
-  if (n >= 100)   return Math.round(n / 5) * 5;
-  return Math.round(n);
+  return snapToTick(Math.round(n));
 }
 
 // Main S/R calculator
@@ -679,6 +727,17 @@ function calcSR(ohlc, price) {
     support1:    supports[0]    || null,
     support2:    supports[1]    || null,
     support3:    supports[2]    || null,
+    // For each resistance: Entry = 2 ticks above (buy on breakout confirmation)
+    r1Entry: resistances[0] ? ticksUp(resistances[0], 2)   : null,
+    r2Entry: resistances[1] ? ticksUp(resistances[1], 2)   : null,
+    r3Entry: resistances[2] ? ticksUp(resistances[2], 2)   : null,
+    // For each support: StopLoss = 2 ticks below, Re-entry = 2 ticks below support (re-enter if bounces)
+    s1SL:      supports[0] ? ticksDown(supports[0], 2) : null,
+    s2SL:      supports[1] ? ticksDown(supports[1], 2) : null,
+    s3SL:      supports[2] ? ticksDown(supports[2], 2) : null,
+    s1Reentry: supports[0] && supports[1] ? ticksDown(supports[1], 2) : null,
+    s2Reentry: supports[1] && supports[2] ? ticksDown(supports[2], 2) : null,
+    s3Reentry: null, // No S4 data available
     signal, analysis,
     ema5: ema5Val, ema20: ema20Val, rsiVal,
   };
@@ -744,6 +803,9 @@ function renderCard(ticker, stockData, sr) {
   const { price, change, changePct, high52w, low52w, volume } = stockData;
   const { resistance1, resistance2, resistance3,
           support1, support2, support3,
+          r1Entry, r2Entry, r3Entry,
+          s1SL, s2SL, s3SL,
+          s1Reentry, s2Reentry, s3Reentry,
           signal, analysis, ema5, ema20, rsiVal } = sr;
 
   const chgClass  = (change || 0) >= 0 ? 'up' : 'down';
@@ -799,20 +861,75 @@ function renderCard(ticker, stockData, sr) {
         </div>
       </div>
 
-      <!-- Level Table -->
-      <div class="levels-grid">
-        <div class="level-group resistance-group">
-          <div class="level-group-title"><div class="dot"></div>RESISTANCE</div>
-          ${resistance1 ? `<div class="level-row"><span class="level-label">R1</span><span class="level-value">${fmt(resistance1)}</span></div>` : ''}
-          ${resistance2 ? `<div class="level-row"><span class="level-label">R2</span><span class="level-value">${fmt(resistance2)}</span></div>` : ''}
-          ${resistance3 ? `<div class="level-row"><span class="level-label">R3</span><span class="level-value">${fmt(resistance3)}</span></div>` : ''}
+      <!-- Actionable S/R Tables -->
+      <div class="sr-tables">
+
+        <!-- SUPPORT TABLE -->
+        <div class="sr-table-wrap support-table">
+          <div class="sr-table-title"><div class="dot"></div>SUPPORT</div>
+          <table class="sr-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Price</th>
+                <th>Stop Loss</th>
+                <th>Re-Entry</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${support1 ? `<tr>
+                <td>S1</td>
+                <td class="price-col">${support1}</td>
+                <td class="sl-col">${s1SL ?? '—'}</td>
+                <td class="entry-col">${s1Reentry ?? '<span class="na-col">N/A</span>'}</td>
+              </tr>` : ''}
+              ${support2 ? `<tr>
+                <td>S2</td>
+                <td class="price-col">${support2}</td>
+                <td class="sl-col">${s2SL ?? '—'}</td>
+                <td class="entry-col">${s2Reentry ?? '<span class="na-col">N/A</span>'}</td>
+              </tr>` : ''}
+              ${support3 ? `<tr>
+                <td>S3</td>
+                <td class="price-col">${support3}</td>
+                <td class="sl-col">${s3SL ?? '—'}</td>
+                <td class="na-col" style="text-align:right">N/A</td>
+              </tr>` : ''}
+            </tbody>
+          </table>
         </div>
-        <div class="level-group support-group">
-          <div class="level-group-title"><div class="dot"></div>SUPPORT</div>
-          ${support1 ? `<div class="level-row"><span class="level-label">S1</span><span class="level-value">${fmt(support1)}</span></div>` : ''}
-          ${support2 ? `<div class="level-row"><span class="level-label">S2</span><span class="level-value">${fmt(support2)}</span></div>` : ''}
-          ${support3 ? `<div class="level-row"><span class="level-label">S3</span><span class="level-value">${fmt(support3)}</span></div>` : ''}
+
+        <!-- RESISTANCE TABLE -->
+        <div class="sr-table-wrap resistance-table">
+          <div class="sr-table-title"><div class="dot"></div>RESISTANCE</div>
+          <table class="sr-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Price</th>
+                <th colspan="2">Entry</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${resistance1 ? `<tr>
+                <td>R1</td>
+                <td class="price-col">${resistance1}</td>
+                <td class="entry-col" colspan="2">${r1Entry ?? '—'}</td>
+              </tr>` : ''}
+              ${resistance2 ? `<tr>
+                <td>R2</td>
+                <td class="price-col">${resistance2}</td>
+                <td class="entry-col" colspan="2">${r2Entry ?? '—'}</td>
+              </tr>` : ''}
+              ${resistance3 ? `<tr>
+                <td>R3</td>
+                <td class="price-col">${resistance3}</td>
+                <td class="entry-col" colspan="2">${r3Entry ?? '—'}</td>
+              </tr>` : ''}
+            </tbody>
+          </table>
         </div>
+
       </div>
 
       <!-- Stats -->
