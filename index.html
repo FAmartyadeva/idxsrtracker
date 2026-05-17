@@ -349,11 +349,118 @@
   .stocks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   .stocks-grid.single { grid-template-columns: 1fr; max-width: 700px; margin: 0 auto; }
 
+  /* ══ MOBILE ══════════════════════════════════════ */
   @media (max-width: 768px) {
-    .header, .main, footer { padding-left: 20px; padding-right: 20px; }
+    .header { padding: 14px 16px; }
+    .logo-main { font-size: 17px; }
+    .logo-tag { font-size: 9px; padding: 2px 6px; }
+    .last-updated { display: none; }
+    .refresh-btn { padding: 7px 14px; font-size: 11px; }
+
+    .main { padding: 12px 16px; gap: 14px; }
+
+    .source-note { font-size: 10px; padding: 6px 12px; gap: 4px; }
+
+    .ticker-manager { padding: 12px 14px; gap: 10px; }
+    .ticker-manager-title { font-size: 10px; }
+    .ticker-manager-hint { display: none; }
+    .ticker-input { font-size: 13px; padding: 8px 12px; max-width: 140px; }
+    .ticker-add-btn { padding: 8px 14px; font-size: 11px; }
+    .quick-picks { gap: 5px; }
+    .quick-pick-btn { font-size: 9px; padding: 3px 7px; }
+
     .stocks-grid, .stocks-grid.single { grid-template-columns: 1fr; }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
-    footer { flex-direction: column; gap: 8px; }
+
+    /* Card */
+    .card-header { padding: 14px 16px 12px; }
+    .ticker { font-size: 22px; }
+    .current-price { font-size: 20px; }
+    .price-change { font-size: 11px; }
+    .card-body { padding: 14px 16px; gap: 12px; }
+
+    /* TradingView chart */
+    .tv-chart-wrap iframe { height: 220px; }
+
+    /* S/R bar */
+    .sr-visual { height: 48px; }
+    .sr-label .sr-val { font-size: 10px; }
+
+    /* S/R tables — stack vertically on mobile, card-style rows */
+    .sr-tables { grid-template-columns: 1fr; gap: 10px; }
+
+    .sr-table { display: none; }  /* Hide desktop table */
+
+    /* Mobile S/R card rows */
+    .sr-mobile-rows { display: flex; flex-direction: column; gap: 0; }
+    .sr-mobile-row {
+      display: grid; padding: 8px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      align-items: center;
+    }
+    .sr-mobile-row:last-child { border-bottom: none; }
+
+    /* Support: label | Price | SL | Re-Entry */
+    .support-table .sr-mobile-row { grid-template-columns: 28px 1fr 1fr 1fr; gap: 4px; }
+    /* Resistance: label | Price | Entry */
+    .resistance-table .sr-mobile-row { grid-template-columns: 28px 1fr 1fr; gap: 4px; }
+
+    .sr-mobile-label {
+      font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    }
+    .support-table .sr-mobile-label { color: var(--red); }
+    .resistance-table .sr-mobile-label { color: var(--green); }
+
+    .sr-mobile-cell {
+      font-family: var(--mono); font-size: 11px; text-align: right;
+    }
+    .sr-mobile-cell.price { font-weight: 700; font-size: 12px; color: var(--text); }
+    .sr-mobile-cell.sl    { color: var(--red); opacity: 0.85; font-size: 11px; }
+    .sr-mobile-cell.entry { color: #81d4fa; font-size: 11px; }
+    .sr-mobile-cell.na    { color: var(--muted); font-size: 10px; }
+
+    .sr-mobile-header {
+      display: grid; padding: 4px 12px 6px;
+    }
+    .support-table .sr-mobile-header    { grid-template-columns: 28px 1fr 1fr 1fr; }
+    .resistance-table .sr-mobile-header { grid-template-columns: 28px 1fr 1fr; }
+    .sr-mobile-header span {
+      font-family: var(--mono); font-size: 9px; color: var(--muted);
+      text-align: right; letter-spacing: 0.5px;
+    }
+    .sr-mobile-header span:first-child { text-align: left; }
+
+    /* Stats */
+    .stats-row { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .stat-box { padding: 8px 10px; }
+    .stat-val { font-size: 12px; }
+    .stat-key { font-size: 8px; }
+
+    /* Indicators */
+    .indicators-row { gap: 6px; }
+    .ind-box { padding: 8px 10px; }
+    .ind-val { font-size: 12px; }
+    .ind-key { font-size: 8px; }
+
+    /* Signal */
+    .signal-row { padding: 10px 12px; }
+    .signal-label { font-size: 10px; }
+    .signal-badge { font-size: 10px; padding: 4px 10px; }
+
+    /* Analysis */
+    .analysis-box { padding: 12px 14px; }
+    .analysis-text { font-size: 12px; }
+
+    /* Verify buttons */
+    .verify-row { gap: 6px; }
+    .verify-btn { font-size: 9px; padding: 5px 9px; }
+
+    footer { padding: 14px 16px; flex-direction: column; gap: 4px; font-size: 10px; }
+  }
+
+  /* Desktop: hide mobile rows */
+  @media (min-width: 769px) {
+    .sr-mobile-rows { display: none; }
+    .sr-mobile-header { display: none; }
   }
 </style>
 </head>
@@ -867,6 +974,8 @@ function renderCard(ticker, stockData, sr) {
         <!-- SUPPORT TABLE -->
         <div class="sr-table-wrap support-table">
           <div class="sr-table-title"><div class="dot"></div>SUPPORT</div>
+
+          <!-- Desktop table -->
           <table class="sr-table">
             <thead>
               <tr>
@@ -897,11 +1006,38 @@ function renderCard(ticker, stockData, sr) {
               </tr>` : ''}
             </tbody>
           </table>
+
+          <!-- Mobile card rows -->
+          <div class="sr-mobile-header">
+            <span></span><span>Price</span><span>SL</span><span>Re-Entry</span>
+          </div>
+          <div class="sr-mobile-rows">
+            ${support1 ? `<div class="sr-mobile-row">
+              <span class="sr-mobile-label">S1</span>
+              <span class="sr-mobile-cell price">${support1}</span>
+              <span class="sr-mobile-cell sl">${s1SL ?? '—'}</span>
+              <span class="sr-mobile-cell entry">${s1Reentry ?? '<span class="na">N/A</span>'}</span>
+            </div>` : ''}
+            ${support2 ? `<div class="sr-mobile-row">
+              <span class="sr-mobile-label">S2</span>
+              <span class="sr-mobile-cell price">${support2}</span>
+              <span class="sr-mobile-cell sl">${s2SL ?? '—'}</span>
+              <span class="sr-mobile-cell entry">${s2Reentry ?? '<span class="na">N/A</span>'}</span>
+            </div>` : ''}
+            ${support3 ? `<div class="sr-mobile-row">
+              <span class="sr-mobile-label">S3</span>
+              <span class="sr-mobile-cell price">${support3}</span>
+              <span class="sr-mobile-cell sl">${s3SL ?? '—'}</span>
+              <span class="sr-mobile-cell na">N/A</span>
+            </div>` : ''}
+          </div>
         </div>
 
         <!-- RESISTANCE TABLE -->
         <div class="sr-table-wrap resistance-table">
           <div class="sr-table-title"><div class="dot"></div>RESISTANCE</div>
+
+          <!-- Desktop table -->
           <table class="sr-table">
             <thead>
               <tr>
@@ -928,6 +1064,28 @@ function renderCard(ticker, stockData, sr) {
               </tr>` : ''}
             </tbody>
           </table>
+
+          <!-- Mobile card rows -->
+          <div class="sr-mobile-header">
+            <span></span><span>Price</span><span>Entry</span>
+          </div>
+          <div class="sr-mobile-rows">
+            ${resistance1 ? `<div class="sr-mobile-row">
+              <span class="sr-mobile-label">R1</span>
+              <span class="sr-mobile-cell price">${resistance1}</span>
+              <span class="sr-mobile-cell entry">${r1Entry ?? '—'}</span>
+            </div>` : ''}
+            ${resistance2 ? `<div class="sr-mobile-row">
+              <span class="sr-mobile-label">R2</span>
+              <span class="sr-mobile-cell price">${resistance2}</span>
+              <span class="sr-mobile-cell entry">${r2Entry ?? '—'}</span>
+            </div>` : ''}
+            ${resistance3 ? `<div class="sr-mobile-row">
+              <span class="sr-mobile-label">R3</span>
+              <span class="sr-mobile-cell price">${resistance3}</span>
+              <span class="sr-mobile-cell entry">${r3Entry ?? '—'}</span>
+            </div>` : ''}
+          </div>
         </div>
 
       </div>
