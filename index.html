@@ -254,9 +254,61 @@
     display: flex; justify-content: space-between;
   }
 
+  /* TICKER MANAGER */
+  .ticker-manager {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .ticker-manager-label {
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+    letter-spacing: 1px; white-space: nowrap;
+  }
+  .ticker-tags {
+    display: flex; flex-wrap: wrap; gap: 6px; flex: 1;
+  }
+  .ticker-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    color: var(--accent); background: rgba(0,229,160,0.08);
+    border: 1px solid rgba(0,229,160,0.25);
+    padding: 4px 10px; border-radius: 4px; letter-spacing: 0.5px;
+  }
+  .ticker-tag .remove-btn {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 13px; line-height: 1;
+    padding: 0; display: flex; align-items: center;
+    transition: color 0.15s;
+  }
+  .ticker-tag .remove-btn:hover { color: var(--red); }
+  .ticker-input-wrap {
+    display: flex; gap: 6px; align-items: center;
+  }
+  .ticker-input {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--mono); font-size: 12px;
+    padding: 6px 10px; border-radius: 4px; width: 90px;
+    letter-spacing: 1px; text-transform: uppercase; outline: none;
+    transition: border-color 0.2s;
+  }
+  .ticker-input::placeholder { color: var(--muted); }
+  .ticker-input:focus { border-color: rgba(0,229,160,0.4); }
+  .ticker-add-btn {
+    background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3);
+    color: var(--accent); font-family: var(--mono); font-size: 11px;
+    padding: 6px 12px; border-radius: 4px; cursor: pointer;
+    letter-spacing: 0.5px; transition: all 0.2s; white-space: nowrap;
+  }
+  .ticker-add-btn:hover { background: rgba(0,229,160,0.2); }
+  .ticker-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Dynamic grid: 1 col for 1 item, 2 cols for 2+  */
+  .stocks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .stocks-grid.single { grid-template-columns: 1fr; max-width: 700px; margin: 0 auto; }
+
   @media (max-width: 768px) {
     .header, .main, footer { padding-left: 20px; padding-right: 20px; }
-    .stocks-grid { grid-template-columns: 1fr; }
+    .stocks-grid, .stocks-grid.single { grid-template-columns: 1fr; }
     .stats-row { grid-template-columns: repeat(2, 1fr); }
     footer { flex-direction: column; gap: 8px; }
   }
@@ -284,28 +336,25 @@
   </div>
 
   <div class="source-note">
-    📈 Harga: <span>Yahoo Finance</span> (IRSX.JK · BULL.JK) &nbsp;·&nbsp;
+    📈 Harga: <span>Yahoo Finance</span> &nbsp;·&nbsp;
     📺 Chart: <span>TradingView</span> real-time &nbsp;·&nbsp;
     🧮 S/R: <span>Algoritma Swing High/Low</span> dari data OHLC 3 bulan &nbsp;·&nbsp;
     ⚠️ <span style="color:var(--yellow)">Bukan saran investasi</span>
   </div>
 
-  <div class="stocks-grid" id="stocksGrid">
-    <div class="stock-card" id="card-IRSX">
-      <div class="card-header">
-        <div><div class="ticker">IRSX</div><div class="exchange-badge">IDX · Indonesia</div></div>
-        <div class="price-block"><div style="color:var(--muted);font-family:var(--mono);font-size:16px">—</div></div>
-      </div>
-      <div class="card-body"><div class="empty-state"><div class="big">📊</div><div>Awaiting analysis</div></div></div>
-    </div>
-    <div class="stock-card" id="card-BULL">
-      <div class="card-header">
-        <div><div class="ticker">BULL</div><div class="exchange-badge">IDX · Indonesia</div></div>
-        <div class="price-block"><div style="color:var(--muted);font-family:var(--mono);font-size:16px">—</div></div>
-      </div>
-      <div class="card-body"><div class="empty-state"><div class="big">📊</div><div>Awaiting analysis</div></div></div>
+  <!-- TICKER MANAGER -->
+  <div class="ticker-manager">
+    <span class="ticker-manager-label">WATCHLIST:</span>
+    <div class="ticker-tags" id="tickerTags"></div>
+    <div class="ticker-input-wrap">
+      <input class="ticker-input" id="tickerInput" type="text" maxlength="10"
+             placeholder="e.g. BBCA" autocomplete="off"
+             onkeydown="if(event.key==='Enter') addTicker()">
+      <button class="ticker-add-btn" onclick="addTicker()">+ ADD</button>
     </div>
   </div>
+
+  <div class="stocks-grid" id="stocksGrid"></div>
 </main>
 
 <footer>
@@ -314,8 +363,96 @@
 </footer>
 
 <script>
-const TICKERS = ['IRSX', 'BULL'];
+const DEFAULT_TICKERS = ['IRSX', 'BULL'];
+let TICKERS = [...DEFAULT_TICKERS];
+
 const fmt = n => n != null && n > 0 ? 'Rp ' + Number(n).toLocaleString('id-ID') : '—';
+
+/* ══════════════════════════════════════════════════
+   TICKER MANAGER
+══════════════════════════════════════════════════ */
+function saveTickers() {
+  try { localStorage.setItem('idx_watchlist', JSON.stringify(TICKERS)); } catch(_) {}
+}
+function loadTickers() {
+  try {
+    const saved = localStorage.getItem('idx_watchlist');
+    if (saved) TICKERS = JSON.parse(saved);
+  } catch(_) {}
+}
+
+function renderTickerTags() {
+  const container = document.getElementById('tickerTags');
+  container.innerHTML = TICKERS.map(t => `
+    <span class="ticker-tag">
+      ${t}
+      <button class="remove-btn" onclick="removeTicker('${t}')" title="Remove ${t}">×</button>
+    </span>`).join('');
+  // Update grid columns
+  const grid = document.getElementById('stocksGrid');
+  grid.className = 'stocks-grid' + (TICKERS.length === 1 ? ' single' : '');
+}
+
+function addTicker() {
+  const input = document.getElementById('tickerInput');
+  const raw = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!raw) return;
+  if (TICKERS.includes(raw)) {
+    input.value = '';
+    input.placeholder = `${raw} sudah ada!`;
+    setTimeout(() => input.placeholder = 'e.g. BBCA', 2000);
+    return;
+  }
+  if (TICKERS.length >= 6) {
+    input.placeholder = 'Maks 6 saham';
+    setTimeout(() => input.placeholder = 'e.g. BBCA', 2000);
+    input.value = '';
+    return;
+  }
+  TICKERS.push(raw);
+  saveTickers();
+  renderTickerTags();
+  // Add empty card for the new ticker
+  const grid = document.getElementById('stocksGrid');
+  const card = document.createElement('div');
+  card.className = 'stock-card';
+  card.id = `card-${raw}`;
+  card.innerHTML = `
+    <div class="card-header">
+      <div><div class="ticker">${raw}</div><div class="exchange-badge">IDX · Indonesia</div></div>
+      <div class="price-block"><div style="color:var(--muted);font-family:var(--mono);font-size:16px">—</div></div>
+    </div>
+    <div class="card-body"><div class="empty-state"><div class="big">📊</div><div>Klik ANALYZE untuk memuat</div></div></div>`;
+  grid.appendChild(card);
+  input.value = '';
+}
+
+function removeTicker(ticker) {
+  TICKERS = TICKERS.filter(t => t !== ticker);
+  saveTickers();
+  renderTickerTags();
+  const card = document.getElementById(`card-${ticker}`);
+  if (card) card.remove();
+  const grid = document.getElementById('stocksGrid');
+  grid.className = 'stocks-grid' + (TICKERS.length === 1 ? ' single' : '');
+}
+
+function initGrid() {
+  loadTickers();
+  renderTickerTags();
+  const grid = document.getElementById('stocksGrid');
+  grid.innerHTML = TICKERS.map(t => `
+    <div class="stock-card" id="card-${t}">
+      <div class="card-header">
+        <div><div class="ticker">${t}</div><div class="exchange-badge">IDX · Indonesia</div></div>
+        <div class="price-block"><div style="color:var(--muted);font-family:var(--mono);font-size:16px">—</div></div>
+      </div>
+      <div class="card-body"><div class="empty-state"><div class="big">📊</div><div>Awaiting analysis</div></div></div>
+    </div>`).join('');
+}
+
+// Init on load
+initGrid();
 
 /* ══════════════════════════════════════════════════
    TECHNICAL ANALYSIS ENGINE
