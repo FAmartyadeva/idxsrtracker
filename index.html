@@ -256,51 +256,73 @@
 
   /* TICKER MANAGER */
   .ticker-manager {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 14px 16px;
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: linear-gradient(135deg, rgba(0,229,160,0.06) 0%, rgba(0,229,160,0.02) 100%);
+    border: 1px solid rgba(0,229,160,0.3);
+    border-radius: 10px; padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 12px;
   }
-  .ticker-manager-label {
+  .ticker-manager-top {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+  .ticker-manager-title {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    letter-spacing: 2px; display: flex; align-items: center; gap-: 8px;
+  }
+  .ticker-manager-hint {
     font-family: var(--mono); font-size: 10px; color: var(--muted);
-    letter-spacing: 1px; white-space: nowrap;
   }
+  .ticker-search-row {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .ticker-input {
+    flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(0,229,160,0.4);
+    color: var(--accent); font-family: var(--mono); font-size: 14px; font-weight: 700;
+    padding: 10px 14px; border-radius: 6px;
+    letter-spacing: 2px; text-transform: uppercase; outline: none;
+    transition: all 0.2s; max-width: 180px;
+    box-shadow: inset 0 0 12px rgba(0,229,160,0.04);
+  }
+  .ticker-input::placeholder { color: rgba(0,229,160,0.3); font-weight: 400; letter-spacing: 1px; font-size: 12px; }
+  .ticker-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,160,0.12), inset 0 0 12px rgba(0,229,160,0.06); }
+  .ticker-add-btn {
+    background: var(--accent); border: none;
+    color: #0a0c0f; font-family: var(--mono); font-size: 12px; font-weight: 700;
+    padding: 10px 20px; border-radius: 6px; cursor: pointer;
+    letter-spacing: 1px; transition: all 0.2s; white-space: nowrap;
+    box-shadow: 0 0 16px rgba(0,229,160,0.25);
+  }
+  .ticker-add-btn:hover { background: #00ffb3; box-shadow: 0 0 24px rgba(0,229,160,0.4); transform: translateY(-1px); }
+  .ticker-add-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   .ticker-tags {
-    display: flex; flex-wrap: wrap; gap: 6px; flex: 1;
+    display: flex; flex-wrap: wrap; gap: 6px;
   }
   .ticker-tag {
-    display: inline-flex; align-items: center; gap: 5px;
+    display: inline-flex; align-items: center; gap: 6px;
     font-family: var(--mono); font-size: 11px; font-weight: 700;
     color: var(--accent); background: rgba(0,229,160,0.08);
     border: 1px solid rgba(0,229,160,0.25);
-    padding: 4px 10px; border-radius: 4px; letter-spacing: 0.5px;
+    padding: 5px 10px; border-radius: 4px; letter-spacing: 1px;
+    transition: all 0.15s;
   }
+  .ticker-tag:hover { background: rgba(0,229,160,0.12); }
   .ticker-tag .remove-btn {
     background: none; border: none; color: var(--muted);
-    cursor: pointer; font-size: 13px; line-height: 1;
+    cursor: pointer; font-size: 14px; line-height: 1;
     padding: 0; display: flex; align-items: center;
     transition: color 0.15s;
   }
   .ticker-tag .remove-btn:hover { color: var(--red); }
-  .ticker-input-wrap {
-    display: flex; gap: 6px; align-items: center;
+  .quick-picks {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   }
-  .ticker-input {
+  .quick-pick-label { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 1px; }
+  .quick-pick-btn {
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
     background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text); font-family: var(--mono); font-size: 12px;
-    padding: 6px 10px; border-radius: 4px; width: 90px;
-    letter-spacing: 1px; text-transform: uppercase; outline: none;
-    transition: border-color 0.2s;
+    padding: 3px 8px; border-radius: 3px; cursor: pointer;
+    transition: all 0.15s; letter-spacing: 0.5px;
   }
-  .ticker-input::placeholder { color: var(--muted); }
-  .ticker-input:focus { border-color: rgba(0,229,160,0.4); }
-  .ticker-add-btn {
-    background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3);
-    color: var(--accent); font-family: var(--mono); font-size: 11px;
-    padding: 6px 12px; border-radius: 4px; cursor: pointer;
-    letter-spacing: 0.5px; transition: all 0.2s; white-space: nowrap;
-  }
-  .ticker-add-btn:hover { background: rgba(0,229,160,0.2); }
-  .ticker-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .quick-pick-btn:hover { color: var(--accent); border-color: rgba(0,229,160,0.3); background: rgba(0,229,160,0.05); }
 
   /* Dynamic grid: 1 col for 1 item, 2 cols for 2+  */
   .stocks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -344,14 +366,27 @@
 
   <!-- TICKER MANAGER -->
   <div class="ticker-manager">
-    <span class="ticker-manager-label">WATCHLIST:</span>
-    <div class="ticker-tags" id="tickerTags"></div>
-    <div class="ticker-input-wrap">
-      <input class="ticker-input" id="tickerInput" type="text" maxlength="10"
-             placeholder="e.g. BBCA" autocomplete="off"
-             onkeydown="if(event.key==='Enter') addTicker()">
-      <button class="ticker-add-btn" onclick="addTicker()">+ ADD</button>
+    <div class="ticker-manager-top">
+      <span class="ticker-manager-title">⚡ WATCHLIST — tambah saham IDX apapun</span>
+      <span class="ticker-manager-hint">Maks 6 saham · Ketik kode saham lalu Enter</span>
     </div>
+    <div class="ticker-search-row">
+      <input class="ticker-input" id="tickerInput" type="text" maxlength="10"
+             placeholder="Ketik kode, e.g. BBCA"
+             autocomplete="off"
+             onkeydown="if(event.key==='Enter') addTicker()">
+      <button class="ticker-add-btn" onclick="addTicker()">+ TAMBAH</button>
+    </div>
+    <div class="quick-picks">
+      <span class="quick-pick-label">POPULER:</span>
+      <button class="quick-pick-btn" onclick="quickAdd('BBCA')">BBCA</button>
+      <button class="quick-pick-btn" onclick="quickAdd('TLKM')">TLKM</button>
+      <button class="quick-pick-btn" onclick="quickAdd('GOTO')">GOTO</button>
+      <button class="quick-pick-btn" onclick="quickAdd('BMRI')">BMRI</button>
+      <button class="quick-pick-btn" onclick="quickAdd('ASII')">ASII</button>
+      <button class="quick-pick-btn" onclick="quickAdd('BBRI')">BBRI</button>
+    </div>
+    <div class="ticker-tags" id="tickerTags"></div>
   </div>
 
   <div class="stocks-grid" id="stocksGrid"></div>
@@ -400,13 +435,13 @@ function addTicker() {
   if (TICKERS.includes(raw)) {
     input.value = '';
     input.placeholder = `${raw} sudah ada!`;
-    setTimeout(() => input.placeholder = 'e.g. BBCA', 2000);
+    setTimeout(() => input.placeholder = 'Ketik kode, e.g. BBCA', 2000);
     return;
   }
   if (TICKERS.length >= 6) {
-    input.placeholder = 'Maks 6 saham';
-    setTimeout(() => input.placeholder = 'e.g. BBCA', 2000);
     input.value = '';
+    input.placeholder = 'Maks 6 saham!';
+    setTimeout(() => input.placeholder = 'Ketik kode, e.g. BBCA', 2000);
     return;
   }
   TICKERS.push(raw);
@@ -437,6 +472,17 @@ function removeTicker(ticker) {
   grid.className = 'stocks-grid' + (TICKERS.length === 1 ? ' single' : '');
 }
 
+function quickAdd(ticker) {
+  if (TICKERS.includes(ticker)) {
+    const tags = document.getElementById('tickerTags');
+    const all  = tags.querySelectorAll('.ticker-tag');
+    all.forEach(el => { if (el.textContent.trim().startsWith(ticker)) { el.style.background = 'rgba(0,229,160,0.3)'; setTimeout(() => el.style.background = '', 700); } });
+    return;
+  }
+  document.getElementById('tickerInput').value = ticker;
+  addTicker();
+}
+
 function initGrid() {
   loadTickers();
   renderTickerTags();
@@ -456,14 +502,32 @@ initGrid();
 
 /* ══════════════════════════════════════════════════
    TECHNICAL ANALYSIS ENGINE
-   Pure JS — no AI, no paid API
+   EMA 5 & EMA 20 + Swing High/Low — no AI, no paid API
 ══════════════════════════════════════════════════ */
 
-// Simple Moving Average
-function sma(arr, period) {
+// Exponential Moving Average
+function ema(arr, period) {
   if (arr.length < period) return null;
-  const slice = arr.slice(-period);
-  return Math.round(slice.reduce((a, b) => a + b, 0) / period);
+  const k = 2 / (period + 1);
+  let val = arr.slice(0, period).reduce((a, b) => a + b, 0) / period;
+  for (let i = period; i < arr.length; i++) {
+    val = arr[i] * k + val * (1 - k);
+  }
+  return Math.round(val);
+}
+
+// All EMA values (full series) — for S/R zone detection
+function emaFull(arr, period) {
+  if (arr.length < period) return [];
+  const k = 2 / (period + 1);
+  const result = [];
+  let val = arr.slice(0, period).reduce((a, b) => a + b, 0) / period;
+  result.push(Math.round(val));
+  for (let i = period; i < arr.length; i++) {
+    val = arr[i] * k + val * (1 - k);
+    result.push(Math.round(val));
+  }
+  return result;
 }
 
 // RSI (14-period)
@@ -482,46 +546,48 @@ function rsi(closes, period = 14) {
   return parseFloat((100 - 100 / (1 + rs)).toFixed(1));
 }
 
-// Detect swing highs: a candle whose high is highest among window neighbors
-function swingHighs(ohlc, window = 3) {
+// Swing highs with configurable lookback
+function swingHighs(ohlc, win = 3) {
   const highs = [];
-  for (let i = window; i < ohlc.length - window; i++) {
+  for (let i = win; i < ohlc.length - win; i++) {
     const h = ohlc[i].high;
-    let isSwing = true;
-    for (let j = i - window; j <= i + window; j++) {
-      if (j !== i && ohlc[j].high >= h) { isSwing = false; break; }
+    let ok = true;
+    for (let j = i - win; j <= i + win; j++) {
+      if (j !== i && ohlc[j].high >= h) { ok = false; break; }
     }
-    if (isSwing) highs.push(h);
+    if (ok) highs.push(h);
   }
-  return highs.sort((a, b) => b - a); // descending
+  return highs;
 }
 
-// Detect swing lows: a candle whose low is lowest among window neighbors
-function swingLows(ohlc, window = 3) {
+// Swing lows with configurable lookback
+function swingLows(ohlc, win = 3) {
   const lows = [];
-  for (let i = window; i < ohlc.length - window; i++) {
+  for (let i = win; i < ohlc.length - win; i++) {
     const l = ohlc[i].low;
-    let isSwing = true;
-    for (let j = i - window; j <= i + window; j++) {
-      if (j !== i && ohlc[j].low <= l) { isSwing = false; break; }
+    let ok = true;
+    for (let j = i - win; j <= i + win; j++) {
+      if (j !== i && ohlc[j].low <= l) { ok = false; break; }
     }
-    if (isSwing) lows.push(l);
+    if (ok) lows.push(l);
   }
-  return lows.sort((a, b) => a - b); // ascending
+  return lows;
 }
 
-// Cluster nearby levels (within 1.5% of each other → merge)
-function clusterLevels(levels, pct = 0.015) {
+// Cluster nearby levels (within 1.2% → merge to nearest)
+function clusterLevels(levels, pct = 0.012) {
+  const sorted = [...levels].sort((a, b) => a - b);
   const result = [];
-  for (const lvl of levels) {
+  for (const lvl of sorted) {
     const existing = result.find(r => Math.abs(r - lvl) / r < pct);
     if (!existing) result.push(lvl);
   }
   return result;
 }
 
-// Round to nearest psychologically clean number
+// Round to psychologically clean number
 function roundPsych(n) {
+  if (n >= 50000) return Math.round(n / 1000) * 1000;
   if (n >= 10000) return Math.round(n / 500) * 500;
   if (n >= 1000)  return Math.round(n / 50) * 50;
   if (n >= 100)   return Math.round(n / 5) * 5;
@@ -530,71 +596,91 @@ function roundPsych(n) {
 
 // Main S/R calculator
 function calcSR(ohlc, price) {
-  if (!ohlc || ohlc.length < 10) return null;
+  if (!ohlc || ohlc.length < 15) return null;
 
-  const closes  = ohlc.map(c => c.close);
-  const highs   = ohlc.map(c => c.high);
-  const lows    = ohlc.map(c => c.low);
+  const closes = ohlc.map(c => c.close);
+  const highs  = ohlc.map(c => c.high);
+  const lows   = ohlc.map(c => c.low);
 
-  // Swing levels
-  const rawResistances = swingHighs(ohlc, 3).map(roundPsych);
-  const rawSupports    = swingLows(ohlc, 3).map(roundPsych);
+  // EMA 5 and EMA 20 (current values)
+  const ema5Val  = ema(closes, 5);
+  const ema20Val = ema(closes, 20);
 
-  // Add 52w-style levels: recent period high/low
-  const periodHigh = Math.round(Math.max(...highs.slice(-20)));
-  const periodLow  = Math.round(Math.min(...lows.slice(-20)));
-  rawResistances.push(roundPsych(periodHigh));
-  rawSupports.push(roundPsych(periodLow));
+  // Full EMA series — EMA crossover zones act as dynamic S/R
+  const ema5Series  = emaFull(closes, 5);
+  const ema20Series = emaFull(closes, 20);
 
-  // Filter: resistances must be > price, supports must be < price
-  const resistances = clusterLevels(rawResistances.filter(r => r > price)).slice(0, 3);
-  const supports    = clusterLevels(rawSupports.filter(s => s < price)).slice(0, 3);
+  // Swing-based raw levels
+  const rawRes = swingHighs(ohlc, 3).map(roundPsych);
+  const rawSup = swingLows(ohlc, 3).map(roundPsych);
+
+  // Add EMA values as S/R candidates (EMAs are dynamic support/resistance)
+  if (ema5Val)  { rawRes.push(roundPsych(ema5Val));  rawSup.push(roundPsych(ema5Val));  }
+  if (ema20Val) { rawRes.push(roundPsych(ema20Val)); rawSup.push(roundPsych(ema20Val)); }
+
+  // Add recent period extremes (20-bar and 60-bar)
+  const recentHighs20 = Math.max(...highs.slice(-20));
+  const recentLows20  = Math.min(...lows.slice(-20));
+  const recentHighs60 = Math.max(...highs.slice(-60));
+  const recentLows60  = Math.min(...lows.slice(-60));
+  rawRes.push(roundPsych(recentHighs20), roundPsych(recentHighs60));
+  rawSup.push(roundPsych(recentLows20),  roundPsych(recentLows60));
+
+  // Filter: resistance ABOVE price, support BELOW price
+  // Then sort: R1 = closest to price (ascending), S1 = closest to price (descending)
+  const resistances = clusterLevels(rawRes.filter(r => r > price))
+    .sort((a, b) => a - b)   // ascending → R1 is nearest
+    .slice(0, 3);
+
+  const supports = clusterLevels(rawSup.filter(s => s < price))
+    .sort((a, b) => b - a)   // descending → S1 is nearest
+    .slice(0, 3);
 
   // Indicators
-  const ma20    = sma(closes, 20);
-  const ma50    = sma(closes, 50);
-  const rsiVal  = rsi(closes, 14);
+  const rsiVal = rsi(closes, 14);
 
-  // Signal logic
-  const aboveMa20 = ma20 && price > ma20;
-  const aboveMa50 = ma50 && price > ma50;
-  const rsiOk     = rsiVal !== null && rsiVal > 45 && rsiVal < 75;
-  const rsiBear   = rsiVal !== null && rsiVal < 40;
+  // Signal: use EMA5 vs EMA20 crossover + price position
+  const ema5Above20  = ema5Val && ema20Val && ema5Val > ema20Val;
+  const priceAbove5  = ema5Val  && price > ema5Val;
+  const priceAbove20 = ema20Val && price > ema20Val;
+  const rsiOk   = rsiVal !== null && rsiVal > 45 && rsiVal < 75;
+  const rsiBear = rsiVal !== null && rsiVal < 40;
 
   let signal = 'Neutral';
-  if (aboveMa20 && aboveMa50 && rsiOk) signal = 'Bullish';
-  else if (!aboveMa20 && !aboveMa50 && rsiBear) signal = 'Bearish';
-  else if (aboveMa20 || aboveMa50) signal = 'Bullish';
-  else signal = 'Bearish';
+  if (ema5Above20 && priceAbove5 && rsiOk)           signal = 'Bullish';
+  else if (!ema5Above20 && !priceAbove20 && rsiBear)  signal = 'Bearish';
+  else if (priceAbove5 || priceAbove20)               signal = 'Bullish';
+  else if (!priceAbove5 && !priceAbove20)             signal = 'Bearish';
 
-  // Generate analysis text
-  const nearestR = resistances[0] || null;
-  const nearestS = supports[0] || null;
-  const rsiDesc  = rsiVal > 70 ? 'overbought' : rsiVal < 30 ? 'oversold' : `${rsiVal}`;
+  // Analysis text
+  const r1 = resistances[0] || null;
+  const s1 = supports[0]    || null;
+  const rsiDesc = rsiVal > 70 ? 'overbought' : rsiVal < 30 ? 'oversold' : `${rsiVal}`;
   let analysis = '';
+
   if (signal === 'Bullish') {
-    analysis = `Harga berada di atas MA${ma50 ? '20 & MA50' : '20'}, menunjukkan tren naik jangka pendek.`;
-    if (nearestR) analysis += ` Resistance terdekat di ${fmt(nearestR)} perlu ditembus untuk konfirmasi lanjutan.`;
-    if (rsiVal)   analysis += ` RSI ${rsiDesc}${rsiVal > 60 ? ', waspadai potensi koreksi.' : ', momentum masih kuat.'}`;
+    analysis = `EMA5 (${fmt(ema5Val)}) berada di atas EMA20 (${fmt(ema20Val)}), golden cross — tren bullish aktif.`;
+    if (r1) analysis += ` Resistance terdekat di ${fmt(r1)}, target pertama jika momentum berlanjut.`;
+    if (rsiVal) analysis += ` RSI ${rsiDesc}${rsiVal > 65 ? ' — waspadai potensi koreksi jangka pendek.' : ' — momentum masih sehat.'}`;
   } else if (signal === 'Bearish') {
-    analysis = `Harga berada di bawah MA${ma50 ? '20 & MA50' : '20'}, tekanan jual mendominasi.`;
-    if (nearestS) analysis += ` Support terdekat di ${fmt(nearestS)} menjadi area pantauan.`;
-    if (rsiVal)   analysis += ` RSI ${rsiDesc}${rsiVal < 30 ? ', potensi rebound teknikal.' : '.'}`;
+    analysis = `EMA5 (${fmt(ema5Val)}) di bawah EMA20 (${fmt(ema20Val)}), death cross — tekanan jual dominan.`;
+    if (s1) analysis += ` Support terdekat di ${fmt(s1)}, area kritis yang perlu diperhatikan.`;
+    if (rsiVal) analysis += ` RSI ${rsiDesc}${rsiVal < 30 ? ' — zona oversold, waspadai potensi rebound.' : '.'}`;
   } else {
-    analysis = `Harga bergerak sideways di antara support dan resistance.`;
-    if (nearestS && nearestR) analysis += ` Pantau range ${fmt(nearestS)}–${fmt(nearestR)} untuk breakout.`;
-    if (rsiVal)   analysis += ` RSI di ${rsiDesc}, belum ada sinyal kuat.`;
+    analysis = `Harga berkonsolidasi antara EMA5 (${fmt(ema5Val)}) dan EMA20 (${fmt(ema20Val)}).`;
+    if (s1 && r1) analysis += ` Range sideways ${fmt(s1)}–${fmt(r1)}, tunggu breakout untuk konfirmasi arah.`;
+    if (rsiVal) analysis += ` RSI di ${rsiDesc}.`;
   }
 
   return {
     resistance1: resistances[0] || null,
     resistance2: resistances[1] || null,
     resistance3: resistances[2] || null,
-    support1: supports[0] || null,
-    support2: supports[1] || null,
-    support3: supports[2] || null,
+    support1:    supports[0]    || null,
+    support2:    supports[1]    || null,
+    support3:    supports[2]    || null,
     signal, analysis,
-    ma20, ma50, rsiVal,
+    ema5: ema5Val, ema20: ema20Val, rsiVal,
   };
 }
 
@@ -658,16 +744,16 @@ function renderCard(ticker, stockData, sr) {
   const { price, change, changePct, high52w, low52w, volume } = stockData;
   const { resistance1, resistance2, resistance3,
           support1, support2, support3,
-          signal, analysis, ma20, ma50, rsiVal } = sr;
+          signal, analysis, ema5, ema20, rsiVal } = sr;
 
   const chgClass  = (change || 0) >= 0 ? 'up' : 'down';
   const chgPrefix = (change || 0) >= 0 ? '+' : '';
   const sigClass  = signal.toLowerCase().includes('bullish') ? 'bullish'
                   : signal.toLowerCase().includes('bearish') ? 'bearish' : 'neutral';
 
-  // S/R bar position
-  const sFloor  = Math.min(support3 || support1, support2 || support1, support1 || price * 0.9);
-  const rCeil   = Math.max(resistance3 || resistance1, resistance2 || resistance1, resistance1 || price * 1.1);
+  // S/R bar: S3 (floor) → R3 (ceil)
+  const sFloor  = support3 || support2 || support1 || price * 0.9;
+  const rCeil   = resistance3 || resistance2 || resistance1 || price * 1.1;
   const barRange = rCeil - sFloor;
   const barPct   = barRange > 0
     ? Math.min(100, Math.max(0, ((price - sFloor) / barRange) * 100))
@@ -740,12 +826,12 @@ function renderCard(ticker, stockData, sr) {
       <!-- Indicators -->
       <div class="indicators-row">
         <div class="ind-box">
-          <div class="ind-val ${ma20 && price > ma20 ? 'bullish' : 'bearish'}">${ma20 ? fmt(ma20) : '—'}</div>
-          <div class="ind-key">MA 20</div>
+          <div class="ind-val ${ema5 && price > ema5 ? 'bullish' : 'bearish'}">${ema5 ? fmt(ema5) : '—'}</div>
+          <div class="ind-key">EMA 5</div>
         </div>
         <div class="ind-box">
-          <div class="ind-val ${ma50 && price > ma50 ? 'bullish' : 'bearish'}">${ma50 ? fmt(ma50) : '—'}</div>
-          <div class="ind-key">MA 50</div>
+          <div class="ind-val ${ema20 && price > ema20 ? 'bullish' : 'bearish'}">${ema20 ? fmt(ema20) : '—'}</div>
+          <div class="ind-key">EMA 20</div>
         </div>
         <div class="ind-box">
           <div class="ind-val ${sigClass}">${signal.toUpperCase()}</div>
