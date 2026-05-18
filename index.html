@@ -838,12 +838,13 @@ function calcSR(ohlc, price) {
     r1Entry: resistances[0] ? ticksUp(resistances[0], 2)   : null,
     r2Entry: resistances[1] ? ticksUp(resistances[1], 2)   : null,
     r3Entry: resistances[2] ? ticksUp(resistances[2], 2)   : null,
-    // For each support: StopLoss = 2 ticks below, Re-entry = 2 ticks below support (re-enter if bounces)
+    // For each support: StopLoss = 2 ticks below current support
+    // Re-entry = 2 ticks ABOVE the next support level (bounce re-entry point)
     s1SL:      supports[0] ? ticksDown(supports[0], 2) : null,
     s2SL:      supports[1] ? ticksDown(supports[1], 2) : null,
     s3SL:      supports[2] ? ticksDown(supports[2], 2) : null,
-    s1Reentry: supports[0] && supports[1] ? ticksDown(supports[1], 2) : null,
-    s2Reentry: supports[1] && supports[2] ? ticksDown(supports[2], 2) : null,
+    s1Reentry: supports[1] ? ticksUp(supports[1], 2) : null,   // 2 ticks above S2
+    s2Reentry: supports[2] ? ticksUp(supports[2], 2) : null,   // 2 ticks above S3
     s3Reentry: null, // No S4 data available
     signal, analysis,
     ema5: ema5Val, ema20: ema20Val, rsiVal,
