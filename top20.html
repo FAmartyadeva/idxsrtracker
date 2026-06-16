@@ -348,7 +348,7 @@ function renderTable(json) {
       <td class="ticker-col">${row.ticker}</td>
       <td class="sector-col">${row.sector || '—'}</td>
       <td>${fmtRp(row.price)}</td>
-      <td>${fmtShares(row.sharesOutstanding)}</td>
+      <td title="Sumber: ${row.sharesSource || 'tidak tercatat'} · Diakses: ${row.sharesAccessedDate || 'tidak tercatat'}">${fmtShares(row.sharesOutstanding)} ℹ️</td>
       <td>${fmtBigRp(row.marketCap)}</td>
       <td class="ff-col">${row.freeFloatPct.toFixed(2).replace('.', ',')}%</td>
       <td class="ffadj-col">${fmtBigRp(row.ffAdjustedMarketCap)}</td>
@@ -375,9 +375,11 @@ function renderTable(json) {
     const footer = document.getElementById('dataSourceFooter');
     footer.style.display = 'block';
     footer.innerHTML = `
-      📋 Sumber Free Float %: <span>${ds.freeFloatSource}</span> (per ${ds.freeFloatAsOf})<br>
-      📋 Sumber Saham Beredar: <span>${ds.sharesOutstandingSource}</span> (per ${ds.sharesOutstandingAsOf})<br>
-      ℹ️ ${ds.note}`;
+      📋 Sumber Free Float %: <span>${ds.freeFloatSource}</span><br>
+      &nbsp;&nbsp;&nbsp;Published: ${ds.freeFloatPublishedDate} · Diakses: ${ds.freeFloatAccessedDate} · <a href="${ds.freeFloatSourceUrl}" target="_blank" rel="noopener" style="color:var(--accent)">lihat sumber ↗</a><br>
+      ✓ Cross-check: ${ds.freeFloatCrossCheck}<br>
+      📋 Sumber Saham Beredar: ${ds.sharesOutstandingNote} <span style="color:var(--yellow)">(arahkan kursor ke kolom "Saham Beredar" di tabel untuk lihat sumber per saham)</span><br>
+      <span class="warn">⚠️ ${ds.generalCaveat}</span>`;
   }
 }
 
