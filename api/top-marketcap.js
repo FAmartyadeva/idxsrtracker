@@ -62,6 +62,8 @@ export default async function handler(req, res) {
       price: item.price,
       tradingDate: item.actualTradingDate,
       sharesOutstanding: item.sharesOutstanding,
+      sharesSource: item.sharesSource,
+      sharesAccessedDate: item.sharesAccessedDate,
       freeFloatPct: item.freeFloatPct,
       marketCap: Math.round(marketCap),
       freeFloatShares: Math.round(freeFloatShares),
